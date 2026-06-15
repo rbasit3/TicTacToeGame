@@ -7,10 +7,6 @@ Player::Player(string name, char symbol){
     setName(name);
     setSymbol(symbol);
 }
-Player::Player(Player &other){
-    name = other.name;
-    symbol = other.symbol;
-}
 void Player::setName(string name){
     this->name = name;
 }
