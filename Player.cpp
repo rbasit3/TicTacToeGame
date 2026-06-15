@@ -23,6 +23,4 @@ void Player::displayPlayerInfo(){
     cout << "Player Name: " << name << endl;
     cout << "Player Symbol: " << symbol << endl;
 }
-bool Player::MakeMove(Board &board, int position){
-    return board.placeSymbol(position, symbol);
-}
+
