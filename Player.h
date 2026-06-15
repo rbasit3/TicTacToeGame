@@ -1,21 +1,22 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "Board.h"
 using namespace std;
 
 class Player{
     private:
     string name;
     char symbol;
-    int score;
     public:
-    Player(string name, char symbol, int score);
+    Player(string name, char symbol);
     //Setters
     void setName(string name);
     void setSymbol(char symbol);
-    void setScore(int score);
     //Getters
     string getName();
     char getSymbol();
-    int getScore();
+    bool MakeMove(Board &board, int position);
+    void displayPlayerInfo();
+
 };
