@@ -1,9 +1,6 @@
  #pragma once
-#include <iostream>
-#include <string>
 #include "Player.h"
 #include "Board.h"
-using namespace std;
 
 class Game{
     private:

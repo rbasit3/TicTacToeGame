@@ -1,6 +1,5 @@
 #include <iostream>
 #include "Player.h"
-#include <string>
 using namespace std;
 
 Player::Player(string name, char symbol){

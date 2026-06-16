@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Board.h"
 #include <stdexcept>
-#include <string>
 using namespace std;
 
 Board::Board(){

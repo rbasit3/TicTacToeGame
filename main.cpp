@@ -1,6 +1,5 @@
 #include <iostream>
-#include "Player.h"
-#include "Board.h"
+#include <string>
 #include "Game.h"
 using namespace std;
 
