@@ -71,3 +71,11 @@ bool Board::placeSymbol(int position, char symbol){
     }
     return false;
 }
+char Board::getCell(int row, int col){
+    if(row>=0 && row<3 && col>=0 && col<3){
+        return grid[row][col];
+    }
+    else{
+        throw std::out_of_range("Invalid cell position");
+    }
+}
