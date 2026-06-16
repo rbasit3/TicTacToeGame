@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run TicTacToe",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/tictactoe.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/MSYS2/ucrt64/bin/gdb.exe",
+      "preLaunchTask": "Build TicTacToe"
+    }
+  ]
+}

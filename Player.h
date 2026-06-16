@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "Board.h"
 using namespace std;
 
 class Player{
@@ -16,7 +15,5 @@ class Player{
     //Getters
     string getName();
     char getSymbol();
-    bool MakeMove(Board &board, int position);
     void displayPlayerInfo();
-
 };

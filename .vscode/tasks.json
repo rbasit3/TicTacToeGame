@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build TicTacToe",
+      "type": "shell",
+      "command": "C:/MSYS2/ucrt64/bin/g++.exe",
+      "args": [
+        "-std=c++17",
+        "-g",
+        "${workspaceFolder}/main.cpp",
+        "${workspaceFolder}/Board.cpp",
+        "${workspaceFolder}/Game.cpp",
+        "${workspaceFolder}/Player.cpp",
+        "-o",
+        "${workspaceFolder}/tictactoe.exe"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

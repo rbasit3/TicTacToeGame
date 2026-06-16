@@ -1,0 +1,1 @@
+Making a basic tic tac to game using basic oop and pf concepts. Trying to build logic indepedently and also use git to version control. focusing on backend for now.
