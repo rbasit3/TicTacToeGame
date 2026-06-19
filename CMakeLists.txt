@@ -22,8 +22,20 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SFML)
 
+add_executable(ConsoleGame
+    main.cpp
+    Board.cpp
+    Game.cpp
+    Player.cpp
+)
+
+target_compile_features(ConsoleGame PRIVATE cxx_std_17)
+
 add_executable(SfmlTest
     sfml_test.cpp
+    Board.cpp
+    Game.cpp
+    Player.cpp
 )
 
 target_link_libraries(SfmlTest PRIVATE

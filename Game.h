@@ -20,4 +20,7 @@ class Game{
     bool checkDraw();
     bool checkWin();
     void displayWinner();
+    Board& getBoard();
+    bool handleMove(int position);
+    bool isGameOver();
 };

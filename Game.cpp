@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include "Game.h"
 using namespace std;
 
@@ -8,6 +9,9 @@ void Game::setCurrentPlayer(Player* player){
 }
 void Game::setWinner(Player* player){
     winner = player;
+}
+Board& Game::getBoard(){
+    return board;
 }
 Player* Game::getCurrentPlayer(){
     return currentPlayer;
@@ -24,6 +28,39 @@ Player* Game::getWinner(){
         return false;
     }
  }
+ bool Game::handleMove(int position)
+{
+    if(isGameOver()){
+        return false;
+    }
+
+    try{
+        if(!MakeMove(currentPlayer, position)){
+            return false;
+        }
+    }
+    catch(const std::invalid_argument&){
+        return false;
+    }
+
+    if(checkWin()){
+        setWinner(currentPlayer);
+        return true;
+    }
+
+    if(checkDraw()){
+        return true;
+    }
+
+    if(currentPlayer == &player1){
+        setCurrentPlayer(&player2);
+    }
+    else{
+        setCurrentPlayer(&player1);
+    }
+
+    return true;
+}
  void Game::displayWinner(){
     if(winner != nullptr){
         cout << "Congratulations " << winner->getName() << "! You win!" << endl;
@@ -126,4 +163,8 @@ bool Game::checkWin()
         return true;
     }
     return false;
+}
+bool Game::isGameOver()
+{
+    return winner != nullptr || checkDraw();
 }
