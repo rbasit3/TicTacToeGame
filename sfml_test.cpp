@@ -254,26 +254,45 @@ void drawGrid(sf::RenderWindow& window)
 
     line.setSize({5.f, static_cast<float>(BOARD_SIZE)});
 
-    line.setPosition({static_cast<float>(BOARD_LEFT + CELL_SIZE), static_cast<float>(BOARD_TOP)});
+    line.setPosition({
+        static_cast<float>(BOARD_LEFT + CELL_SIZE),
+        static_cast<float>(BOARD_TOP)
+    });
     window.draw(line);
 
-    line.setPosition({static_cast<float>(BOARD_LEFT + CELL_SIZE * 2), static_cast<float>(BOARD_TOP)});
+    line.setPosition({
+        static_cast<float>(BOARD_LEFT + CELL_SIZE * 2),
+        static_cast<float>(BOARD_TOP)
+    });
     window.draw(line);
 
     line.setSize({static_cast<float>(BOARD_SIZE), 5.f});
 
-    line.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP + CELL_SIZE)});
+    line.setPosition({
+        static_cast<float>(BOARD_LEFT),
+        static_cast<float>(BOARD_TOP + CELL_SIZE)
+    });
     window.draw(line);
 
-    line.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP + CELL_SIZE * 2)});
+    line.setPosition({
+        static_cast<float>(BOARD_LEFT),
+        static_cast<float>(BOARD_TOP + CELL_SIZE * 2)
+    });
     window.draw(line);
 
     sf::RectangleShape border;
-    border.setSize({static_cast<float>(BOARD_SIZE), static_cast<float>(BOARD_SIZE)});
-    border.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP)});
+    border.setSize({
+        static_cast<float>(BOARD_SIZE),
+        static_cast<float>(BOARD_SIZE)
+    });
+    border.setPosition({
+        static_cast<float>(BOARD_LEFT),
+        static_cast<float>(BOARD_TOP)
+    });
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineColor(sf::Color::White);
     border.setOutlineThickness(4.f);
+
     window.draw(border);
 }
 
@@ -340,8 +359,13 @@ void drawMarks(
                 bounds.position.y + bounds.size.y / 2.f
             });
 
-            float centerX = static_cast<float>(BOARD_LEFT + col * CELL_SIZE + CELL_SIZE / 2);
-            float centerY = static_cast<float>(BOARD_TOP + row * CELL_SIZE + CELL_SIZE / 2);
+            float centerX = static_cast<float>(
+                BOARD_LEFT + col * CELL_SIZE + CELL_SIZE / 2
+            );
+
+            float centerY = static_cast<float>(
+                BOARD_TOP + row * CELL_SIZE + CELL_SIZE / 2
+            );
 
             mark.setPosition({centerX, centerY - 8.f});
 
@@ -370,6 +394,7 @@ void updateStatusText(sf::Text& statusText, Game& game)
             std::string(1, game.getCurrentPlayer()->getSymbol()) +
             ")"
         );
+
         statusText.setFillColor(sf::Color::Cyan);
     }
 }
@@ -382,9 +407,13 @@ void drawInstructionPopup(
 )
 {
     sf::RectangleShape overlay;
-    overlay.setSize({static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT)});
+    overlay.setSize({
+        static_cast<float>(WINDOW_WIDTH),
+        static_cast<float>(WINDOW_HEIGHT)
+    });
     overlay.setPosition({0.f, 0.f});
     overlay.setFillColor(sf::Color(0, 0, 0, 150));
+
     window.draw(overlay);
 
     sf::RectangleShape popup;
@@ -393,11 +422,46 @@ void drawInstructionPopup(
     popup.setFillColor(sf::Color(25, 25, 25));
     popup.setOutlineColor(sf::Color::Cyan);
     popup.setOutlineThickness(3.f);
+
     window.draw(popup);
 
     window.draw(popupTitle);
     window.draw(popupText);
     okButton.draw(window);
+}
+
+void drawGameOverPopup(
+    sf::RenderWindow& window,
+    sf::Text& gameOverTitle,
+    Button& playAgainButton,
+    Button& mainMenuButton,
+    Button& exitButton
+)
+{
+    sf::RectangleShape overlay;
+    overlay.setSize({
+        static_cast<float>(WINDOW_WIDTH),
+        static_cast<float>(WINDOW_HEIGHT)
+    });
+    overlay.setPosition({0.f, 0.f});
+    overlay.setFillColor(sf::Color(0, 0, 0, 170));
+
+    window.draw(overlay);
+
+    sf::RectangleShape popup;
+    popup.setSize({560.f, 390.f});
+    popup.setPosition({170.f, 150.f});
+    popup.setFillColor(sf::Color(25, 25, 25));
+    popup.setOutlineColor(sf::Color::Cyan);
+    popup.setOutlineThickness(3.f);
+
+    window.draw(popup);
+
+    window.draw(gameOverTitle);
+
+    playAgainButton.draw(window);
+    mainMenuButton.draw(window);
+    exitButton.draw(window);
 }
 
 int main()
@@ -419,10 +483,12 @@ int main()
 
     std::string player1Name = "";
     std::string player2Name = "";
+
     char player1Symbol = 'X';
     char player2Symbol = 'O';
 
     std::unique_ptr<Game> game = nullptr;
+
     bool showInstructions = true;
 
     sf::Text title(font);
@@ -571,31 +637,67 @@ int main()
     );
 
     sf::Text popupTitle(font);
-popupTitle.setString("INSTRUCTIONS");
-popupTitle.setCharacterSize(42);
-popupTitle.setFillColor(sf::Color::Cyan);
-popupTitle.setPosition({285.f, 170.f});
+    popupTitle.setString("INSTRUCTIONS");
+    popupTitle.setCharacterSize(42);
+    popupTitle.setFillColor(sf::Color::Cyan);
+    popupTitle.setPosition({285.f, 170.f});
 
-sf::Text popupText(font);
-popupText.setString(
-    "Click any empty cell to place your symbol.\n\n"
-    "Player 1 symbol will appear in red.\n"
-    "Player 2 symbol will appear in blue.\n\n"
-    "First player to make 3 in a row wins."
-);
-popupText.setCharacterSize(24);
-popupText.setFillColor(sf::Color::White);
-popupText.setPosition({190.f, 250.f});
+    sf::Text popupText(font);
+    popupText.setString(
+        "Click any empty cell to place your symbol.\n\n"
+        "Player 1 symbol will appear in red.\n"
+        "Player 2 symbol will appear in blue.\n\n"
+        "First player to make 3 in a row wins."
+    );
+    popupText.setCharacterSize(24);
+    popupText.setFillColor(sf::Color::White);
+    popupText.setPosition({190.f, 250.f});
 
-Button okInstructionButton(
-    font,
-    "OK",
-    {160.f, 55.f},
-    {370.f, 485.f},
-    sf::Color(40, 160, 90),
-    sf::Color(70, 210, 130),
-    sf::Color::White
-);
+    Button okInstructionButton(
+        font,
+        "OK",
+        {160.f, 55.f},
+        {370.f, 485.f},
+        sf::Color(40, 160, 90),
+        sf::Color(70, 210, 130),
+        sf::Color::White
+    );
+
+    sf::Text gameOverTitle(font);
+    gameOverTitle.setString("");
+    gameOverTitle.setCharacterSize(42);
+    gameOverTitle.setFillColor(sf::Color::Cyan);
+    gameOverTitle.setPosition({260.f, 185.f});
+
+    Button playAgainButton(
+        font,
+        "Play Again",
+        {260.f, 60.f},
+        {320.f, 285.f},
+        sf::Color(40, 160, 90),
+        sf::Color(70, 210, 130),
+        sf::Color::White
+    );
+
+    Button gameOverMainMenuButton(
+        font,
+        "Main Menu",
+        {260.f, 60.f},
+        {320.f, 365.f},
+        sf::Color(40, 120, 180),
+        sf::Color(70, 160, 220),
+        sf::Color::White
+    );
+
+    Button gameOverExitButton(
+        font,
+        "Exit",
+        {260.f, 60.f},
+        {320.f, 445.f},
+        sf::Color(180, 50, 70),
+        sf::Color(230, 80, 100),
+        sf::Color::White
+    );
 
     sf::Text exitTitle(font);
     exitTitle.setString("GOODBYE!");
@@ -647,6 +749,12 @@ Button okInstructionButton(
             {
                 okInstructionButton.update(mousePosition);
             }
+            else if (game != nullptr && game->isGameOver())
+            {
+                playAgainButton.update(mousePosition);
+                gameOverMainMenuButton.update(mousePosition);
+                gameOverExitButton.update(mousePosition);
+            }
         }
         else if (currentScreen == ScreenState::ExitScreen)
         {
@@ -660,7 +768,8 @@ Button okInstructionButton(
                 window.close();
             }
 
-            if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>())
+            if (const auto* mouseButton =
+                    event->getIf<sf::Event::MouseButtonPressed>())
             {
                 if (mouseButton->button == sf::Mouse::Button::Left)
                 {
@@ -691,10 +800,21 @@ Button okInstructionButton(
                     }
                     else if (currentScreen == ScreenState::PlayerSetup)
                     {
-                        player1NameBox.setActive(player1NameBox.isMouseOver(clickPosition));
-                        player1SymbolBox.setActive(player1SymbolBox.isMouseOver(clickPosition));
-                        player2NameBox.setActive(player2NameBox.isMouseOver(clickPosition));
-                        player2SymbolBox.setActive(player2SymbolBox.isMouseOver(clickPosition));
+                        player1NameBox.setActive(
+                            player1NameBox.isMouseOver(clickPosition)
+                        );
+
+                        player1SymbolBox.setActive(
+                            player1SymbolBox.isMouseOver(clickPosition)
+                        );
+
+                        player2NameBox.setActive(
+                            player2NameBox.isMouseOver(clickPosition)
+                        );
+
+                        player2SymbolBox.setActive(
+                            player2SymbolBox.isMouseOver(clickPosition)
+                        );
 
                         if (backFromSetupButton.isMouseOver(clickPosition))
                         {
@@ -704,24 +824,43 @@ Button okInstructionButton(
 
                         if (continueButton.isMouseOver(clickPosition))
                         {
-                            if (isBlank(player1NameBox.value) || isBlank(player2NameBox.value))
+                            if (
+                                isBlank(player1NameBox.value) ||
+                                isBlank(player2NameBox.value)
+                            )
                             {
                                 setupMessage.setString("Names cannot be empty.");
                             }
-                            else if (player1SymbolBox.value.empty() || player2SymbolBox.value.empty())
+                            else if (
+                                player1SymbolBox.value.empty() ||
+                                player2SymbolBox.value.empty()
+                            )
                             {
                                 setupMessage.setString("Symbols cannot be empty.");
                             }
                             else if (
-                                std::isspace(static_cast<unsigned char>(player1SymbolBox.value[0])) ||
-                                std::isspace(static_cast<unsigned char>(player2SymbolBox.value[0]))
+                                std::isspace(
+                                    static_cast<unsigned char>(
+                                        player1SymbolBox.value[0]
+                                    )
+                                ) ||
+                                std::isspace(
+                                    static_cast<unsigned char>(
+                                        player2SymbolBox.value[0]
+                                    )
+                                )
                             )
                             {
                                 setupMessage.setString("Symbols cannot be spaces.");
                             }
-                            else if (player1SymbolBox.value[0] == player2SymbolBox.value[0])
+                            else if (
+                                player1SymbolBox.value[0] ==
+                                player2SymbolBox.value[0]
+                            )
                             {
-                                setupMessage.setString("Both players cannot use the same symbol.");
+                                setupMessage.setString(
+                                    "Both players cannot use the same symbol."
+                                );
                             }
                             else
                             {
@@ -737,6 +876,7 @@ Button okInstructionButton(
 
                                 setupMessage.setString("");
                                 showInstructions = true;
+
                                 updateStatusText(statusText, *game);
 
                                 currentScreen = ScreenState::Playing;
@@ -745,17 +885,42 @@ Button okInstructionButton(
                     }
                     else if (currentScreen == ScreenState::Playing)
                     {
-                        if (backFromPlayingButton.isMouseOver(clickPosition))
-                        {
-                            game.reset();
-                            currentScreen = ScreenState::MainMenu;
-                        }
-                        else if (showInstructions)
+                        if (showInstructions)
                         {
                             if (okInstructionButton.isMouseOver(clickPosition))
                             {
                                 showInstructions = false;
                             }
+                        }
+                        else if (game != nullptr && game->isGameOver())
+                        {
+                            if (playAgainButton.isMouseOver(clickPosition))
+                            {
+                                Player p1(player1Name, player1Symbol);
+                                Player p2(player2Name, player2Symbol);
+
+                                game = std::make_unique<Game>(p1, p2);
+
+                                updateStatusText(statusText, *game);
+
+                                showInstructions = false;
+                            }
+                            else if (
+                                gameOverMainMenuButton.isMouseOver(clickPosition)
+                            )
+                            {
+                                game.reset();
+                                currentScreen = ScreenState::MainMenu;
+                            }
+                            else if (gameOverExitButton.isMouseOver(clickPosition))
+                            {
+                                window.close();
+                            }
+                        }
+                        else if (backFromPlayingButton.isMouseOver(clickPosition))
+                        {
+                            game.reset();
+                            currentScreen = ScreenState::MainMenu;
                         }
                         else if (game != nullptr && !game->isGameOver())
                         {
@@ -781,7 +946,8 @@ Button okInstructionButton(
                 }
             }
 
-            if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())
+            if (const auto* textEntered =
+                    event->getIf<sf::Event::TextEntered>())
             {
                 if (currentScreen == ScreenState::PlayerSetup)
                 {
@@ -849,6 +1015,40 @@ Button okInstructionButton(
                         popupTitle,
                         popupText,
                         okInstructionButton
+                    );
+                }
+                else if (game->isGameOver())
+                {
+                    if (game->getWinner() != nullptr)
+                    {
+                        gameOverTitle.setString(
+                            game->getWinner()->getName() + " wins!"
+                        );
+
+                        gameOverTitle.setFillColor(sf::Color::Green);
+                    }
+                    else
+                    {
+                        gameOverTitle.setString("Game Draw!");
+                        gameOverTitle.setFillColor(sf::Color::Yellow);
+                    }
+
+                    sf::FloatRect titleBounds =
+                        gameOverTitle.getLocalBounds();
+
+                    gameOverTitle.setOrigin({
+                        titleBounds.position.x + titleBounds.size.x / 2.f,
+                        titleBounds.position.y + titleBounds.size.y / 2.f
+                    });
+
+                    gameOverTitle.setPosition({450.f, 215.f});
+
+                    drawGameOverPopup(
+                        window,
+                        gameOverTitle,
+                        playAgainButton,
+                        gameOverMainMenuButton,
+                        gameOverExitButton
                     );
                 }
             }
