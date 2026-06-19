@@ -2,11 +2,19 @@
 #include <iostream>
 #include <string>
 #include <optional>
+#include <memory>
+#include <cctype>
+
+#include "Game.h"
 
 const int WINDOW_WIDTH = 900;
 const int WINDOW_HEIGHT = 700;
 
-// This tells the program which screen to show
+const int BOARD_SIZE = 540;
+const int CELL_SIZE = BOARD_SIZE / 3;
+const int BOARD_LEFT = (WINDOW_WIDTH - BOARD_SIZE) / 2;
+const int BOARD_TOP = 105;
+
 enum class ScreenState
 {
     MainMenu,
@@ -16,7 +24,19 @@ enum class ScreenState
     ExitScreen
 };
 
-// Reusable button class
+bool isBlank(const std::string& text)
+{
+    for (char ch : text)
+    {
+        if (!std::isspace(static_cast<unsigned char>(ch)))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 struct Button
 {
     sf::RectangleShape box;
@@ -84,7 +104,6 @@ struct Button
     }
 };
 
-// Reusable text input box
 struct TextBox
 {
     sf::RectangleShape box;
@@ -151,7 +170,6 @@ struct TextBox
             return;
         }
 
-        // Backspace
         if (unicode == 8)
         {
             if (!value.empty())
@@ -159,7 +177,6 @@ struct TextBox
                 value.pop_back();
             }
         }
-        // Normal printable characters
         else if (unicode >= 32 && unicode < 127)
         {
             if (static_cast<int>(value.size()) < characterLimit)
@@ -230,11 +247,164 @@ void drawExitScreen(
     window.display();
 }
 
+void drawGrid(sf::RenderWindow& window)
+{
+    sf::RectangleShape line;
+    line.setFillColor(sf::Color::White);
+
+    line.setSize({5.f, static_cast<float>(BOARD_SIZE)});
+
+    line.setPosition({static_cast<float>(BOARD_LEFT + CELL_SIZE), static_cast<float>(BOARD_TOP)});
+    window.draw(line);
+
+    line.setPosition({static_cast<float>(BOARD_LEFT + CELL_SIZE * 2), static_cast<float>(BOARD_TOP)});
+    window.draw(line);
+
+    line.setSize({static_cast<float>(BOARD_SIZE), 5.f});
+
+    line.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP + CELL_SIZE)});
+    window.draw(line);
+
+    line.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP + CELL_SIZE * 2)});
+    window.draw(line);
+
+    sf::RectangleShape border;
+    border.setSize({static_cast<float>(BOARD_SIZE), static_cast<float>(BOARD_SIZE)});
+    border.setPosition({static_cast<float>(BOARD_LEFT), static_cast<float>(BOARD_TOP)});
+    border.setFillColor(sf::Color::Transparent);
+    border.setOutlineColor(sf::Color::White);
+    border.setOutlineThickness(4.f);
+    window.draw(border);
+}
+
+int getPositionFromMouse(int mouseX, int mouseY)
+{
+    if (
+        mouseX < BOARD_LEFT ||
+        mouseX >= BOARD_LEFT + BOARD_SIZE ||
+        mouseY < BOARD_TOP ||
+        mouseY >= BOARD_TOP + BOARD_SIZE
+    )
+    {
+        return -1;
+    }
+
+    int col = (mouseX - BOARD_LEFT) / CELL_SIZE;
+    int row = (mouseY - BOARD_TOP) / CELL_SIZE;
+
+    return row * 3 + col + 1;
+}
+
+void drawMarks(
+    sf::RenderWindow& window,
+    Game& game,
+    const sf::Font& font,
+    char player1Symbol,
+    char player2Symbol
+)
+{
+    Board& board = game.getBoard();
+
+    for (int row = 0; row < 3; row++)
+    {
+        for (int col = 0; col < 3; col++)
+        {
+            char cell = board.getCell(row, col);
+
+            if (cell == ' ')
+            {
+                continue;
+            }
+
+            sf::Text mark(font);
+            mark.setString(std::string(1, cell));
+            mark.setCharacterSize(135);
+
+            if (cell == player1Symbol)
+            {
+                mark.setFillColor(sf::Color::Red);
+            }
+            else if (cell == player2Symbol)
+            {
+                mark.setFillColor(sf::Color::Blue);
+            }
+            else
+            {
+                mark.setFillColor(sf::Color::White);
+            }
+
+            sf::FloatRect bounds = mark.getLocalBounds();
+
+            mark.setOrigin({
+                bounds.position.x + bounds.size.x / 2.f,
+                bounds.position.y + bounds.size.y / 2.f
+            });
+
+            float centerX = static_cast<float>(BOARD_LEFT + col * CELL_SIZE + CELL_SIZE / 2);
+            float centerY = static_cast<float>(BOARD_TOP + row * CELL_SIZE + CELL_SIZE / 2);
+
+            mark.setPosition({centerX, centerY - 8.f});
+
+            window.draw(mark);
+        }
+    }
+}
+
+void updateStatusText(sf::Text& statusText, Game& game)
+{
+    if (game.getWinner() != nullptr)
+    {
+        statusText.setString(game.getWinner()->getName() + " wins!");
+        statusText.setFillColor(sf::Color::Green);
+    }
+    else if (game.checkDraw())
+    {
+        statusText.setString("It is a draw!");
+        statusText.setFillColor(sf::Color::Yellow);
+    }
+    else
+    {
+        statusText.setString(
+            game.getCurrentPlayer()->getName() +
+            "'s turn (" +
+            std::string(1, game.getCurrentPlayer()->getSymbol()) +
+            ")"
+        );
+        statusText.setFillColor(sf::Color::Cyan);
+    }
+}
+
+void drawInstructionPopup(
+    sf::RenderWindow& window,
+    sf::Text& popupTitle,
+    sf::Text& popupText,
+    Button& okButton
+)
+{
+    sf::RectangleShape overlay;
+    overlay.setSize({static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT)});
+    overlay.setPosition({0.f, 0.f});
+    overlay.setFillColor(sf::Color(0, 0, 0, 150));
+    window.draw(overlay);
+
+    sf::RectangleShape popup;
+    popup.setSize({620.f, 420.f});
+    popup.setPosition({140.f, 140.f});
+    popup.setFillColor(sf::Color(25, 25, 25));
+    popup.setOutlineColor(sf::Color::Cyan);
+    popup.setOutlineThickness(3.f);
+    window.draw(popup);
+
+    window.draw(popupTitle);
+    window.draw(popupText);
+    okButton.draw(window);
+}
+
 int main()
 {
     sf::RenderWindow window(
         sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}),
-        "Tic Tac Toe - Menu"
+        "Tic Tac Toe"
     );
 
     sf::Font font;
@@ -247,21 +417,19 @@ int main()
 
     ScreenState currentScreen = ScreenState::MainMenu;
 
-    // These will store the final player setup data
     std::string player1Name = "";
     std::string player2Name = "";
     char player1Symbol = 'X';
     char player2Symbol = 'O';
 
-    // ---------------- MAIN MENU TEXT ----------------
+    std::unique_ptr<Game> game = nullptr;
+    bool showInstructions = true;
 
     sf::Text title(font);
     title.setString("TIC TAC TOE");
     title.setCharacterSize(70);
     title.setFillColor(sf::Color::Cyan);
     title.setPosition({250.f, 90.f});
-
-    // ---------------- MAIN MENU BUTTONS ----------------
 
     Button rulesButton(
         font,
@@ -293,8 +461,6 @@ int main()
         sf::Color::White
     );
 
-    // ---------------- RULES SCREEN TEXT ----------------
-
     sf::Text rulesTitle(font);
     rulesTitle.setString("RULES");
     rulesTitle.setCharacterSize(60);
@@ -323,8 +489,6 @@ int main()
         sf::Color(130, 130, 130),
         sf::Color::White
     );
-
-    // ---------------- PLAYER SETUP SCREEN ----------------
 
     sf::Text setupTitle(font);
     setupTitle.setString("PLAYER SETUP");
@@ -390,31 +554,48 @@ int main()
         sf::Color::White
     );
 
-    // ---------------- TEMPORARY PLAYING SCREEN ----------------
-
-    sf::Text playingTitle(font);
-    playingTitle.setString("GAME READY");
-    playingTitle.setCharacterSize(55);
-    playingTitle.setFillColor(sf::Color::Cyan);
-    playingTitle.setPosition({270.f, 120.f});
-
-    sf::Text playerInfo(font);
-    playerInfo.setString("");
-    playerInfo.setCharacterSize(32);
-    playerInfo.setFillColor(sf::Color::Yellow);
-    playerInfo.setPosition({210.f, 250.f});
+    sf::Text statusText(font);
+    statusText.setString("");
+    statusText.setCharacterSize(34);
+    statusText.setFillColor(sf::Color::Cyan);
+    statusText.setPosition({260.f, 35.f});
 
     Button backFromPlayingButton(
         font,
-        "Back to Menu",
-        {260.f, 60.f},
-        {320.f, 520.f},
+        "Menu",
+        {150.f, 50.f},
+        {25.f, 25.f},
         sf::Color(90, 90, 90),
         sf::Color(130, 130, 130),
         sf::Color::White
     );
 
-    // ---------------- EXIT SCREEN TEXT ----------------
+    sf::Text popupTitle(font);
+popupTitle.setString("INSTRUCTIONS");
+popupTitle.setCharacterSize(42);
+popupTitle.setFillColor(sf::Color::Cyan);
+popupTitle.setPosition({285.f, 170.f});
+
+sf::Text popupText(font);
+popupText.setString(
+    "Click any empty cell to place your symbol.\n\n"
+    "Player 1 symbol will appear in red.\n"
+    "Player 2 symbol will appear in blue.\n\n"
+    "First player to make 3 in a row wins."
+);
+popupText.setCharacterSize(24);
+popupText.setFillColor(sf::Color::White);
+popupText.setPosition({190.f, 250.f});
+
+Button okInstructionButton(
+    font,
+    "OK",
+    {160.f, 55.f},
+    {370.f, 485.f},
+    sf::Color(40, 160, 90),
+    sf::Color(70, 210, 130),
+    sf::Color::White
+);
 
     sf::Text exitTitle(font);
     exitTitle.setString("GOODBYE!");
@@ -438,14 +619,11 @@ int main()
         sf::Color::White
     );
 
-    // ---------------- MAIN LOOP ----------------
-
     while (window.isOpen())
     {
         sf::Vector2f mousePosition =
             window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-        // Update hover effect depending on current screen
         if (currentScreen == ScreenState::MainMenu)
         {
             rulesButton.update(mousePosition);
@@ -464,6 +642,11 @@ int main()
         else if (currentScreen == ScreenState::Playing)
         {
             backFromPlayingButton.update(mousePosition);
+
+            if (showInstructions)
+            {
+                okInstructionButton.update(mousePosition);
+            }
         }
         else if (currentScreen == ScreenState::ExitScreen)
         {
@@ -508,7 +691,6 @@ int main()
                     }
                     else if (currentScreen == ScreenState::PlayerSetup)
                     {
-                        // Select active text box
                         player1NameBox.setActive(player1NameBox.isMouseOver(clickPosition));
                         player1SymbolBox.setActive(player1SymbolBox.isMouseOver(clickPosition));
                         player2NameBox.setActive(player2NameBox.isMouseOver(clickPosition));
@@ -522,13 +704,20 @@ int main()
 
                         if (continueButton.isMouseOver(clickPosition))
                         {
-                            if (player1NameBox.value.empty() || player2NameBox.value.empty())
+                            if (isBlank(player1NameBox.value) || isBlank(player2NameBox.value))
                             {
                                 setupMessage.setString("Names cannot be empty.");
                             }
                             else if (player1SymbolBox.value.empty() || player2SymbolBox.value.empty())
                             {
                                 setupMessage.setString("Symbols cannot be empty.");
+                            }
+                            else if (
+                                std::isspace(static_cast<unsigned char>(player1SymbolBox.value[0])) ||
+                                std::isspace(static_cast<unsigned char>(player2SymbolBox.value[0]))
+                            )
+                            {
+                                setupMessage.setString("Symbols cannot be spaces.");
                             }
                             else if (player1SymbolBox.value[0] == player2SymbolBox.value[0])
                             {
@@ -541,13 +730,14 @@ int main()
                                 player1Symbol = player1SymbolBox.value[0];
                                 player2Symbol = player2SymbolBox.value[0];
 
-                                setupMessage.setString("");
+                                Player p1(player1Name, player1Symbol);
+                                Player p2(player2Name, player2Symbol);
 
-                                playerInfo.setString(
-                                    player1Name + " will use symbol: " + std::string(1, player1Symbol) +
-                                    "\n\n" +
-                                    player2Name + " will use symbol: " + std::string(1, player2Symbol)
-                                );
+                                game = std::make_unique<Game>(p1, p2);
+
+                                setupMessage.setString("");
+                                showInstructions = true;
+                                updateStatusText(statusText, *game);
 
                                 currentScreen = ScreenState::Playing;
                             }
@@ -557,7 +747,28 @@ int main()
                     {
                         if (backFromPlayingButton.isMouseOver(clickPosition))
                         {
+                            game.reset();
                             currentScreen = ScreenState::MainMenu;
+                        }
+                        else if (showInstructions)
+                        {
+                            if (okInstructionButton.isMouseOver(clickPosition))
+                            {
+                                showInstructions = false;
+                            }
+                        }
+                        else if (game != nullptr && !game->isGameOver())
+                        {
+                            int position = getPositionFromMouse(
+                                mouseButton->position.x,
+                                mouseButton->position.y
+                            );
+
+                            if (position != -1)
+                            {
+                                game->handleMove(position);
+                                updateStatusText(statusText, *game);
+                            }
                         }
                     }
                     else if (currentScreen == ScreenState::ExitScreen)
@@ -623,9 +834,24 @@ int main()
         {
             window.clear(sf::Color::Black);
 
-            window.draw(playingTitle);
-            window.draw(playerInfo);
-            backFromPlayingButton.draw(window);
+            if (game != nullptr)
+            {
+                window.draw(statusText);
+                backFromPlayingButton.draw(window);
+
+                drawGrid(window);
+                drawMarks(window, *game, font, player1Symbol, player2Symbol);
+
+                if (showInstructions)
+                {
+                    drawInstructionPopup(
+                        window,
+                        popupTitle,
+                        popupText,
+                        okInstructionButton
+                    );
+                }
+            }
 
             window.display();
         }
