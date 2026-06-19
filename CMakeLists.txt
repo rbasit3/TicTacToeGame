@@ -45,3 +45,8 @@ target_link_libraries(SfmlTest PRIVATE
 )
 
 target_compile_features(SfmlTest PRIVATE cxx_std_17)
+add_custom_command(TARGET SfmlTest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:SfmlTest>/assets"
+)
